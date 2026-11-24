@@ -122,6 +122,35 @@ h2{font:900 clamp(2rem,5.5vw,4.75rem)/1 var(--display);letter-spacing:-.04em}
 .cover span{position:absolute;left:.75rem;top:.75rem;background:var(--cream);border:2px solid var(--line);border-radius:99px;padding:.1rem .7rem;font-size:.8125rem;z-index:1}
 .gh-note{border:2px dashed var(--line);border-radius:1.5rem;padding:1.5rem;color:var(--line)}
 
+
+/* Зерно для глубины и пятно света под курсором */
+body::before{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.proj::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(22rem circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.16),transparent 60%)}
+.proj:hover::after{opacity:1}
+.proj{overflow:hidden}
+.proj:hover .proj__meta span:first-child{color:var(--glow)}
+.proj h3{transition:transform .5s var(--ease)}
+.proj:hover h3{transform:translateX(.6rem)}
+.cover{transition:transform .6s var(--ease),box-shadow .6s}
+.proj:hover .cover{transform:rotate(1.2deg) scale(1.015);box-shadow:0 1.5rem 3rem rgba(0,0,0,.5)}
+.skel{height:min(24rem,60svh);border-radius:2rem;border:3px solid #2a2833;background:linear-gradient(100deg,#14131b 30%,#25232f 50%,#14131b 70%) 0 0/250% 100%;animation:shine 1.4s linear infinite}
+@keyframes shine{to{background-position:-150% 0}}
+.chips li{transition:transform .3s var(--ease),background .3s,color .3s}
+.chips li:hover{transform:translateY(-.25rem) rotate(-2deg);background:var(--glow);color:#14120F}
+.shape{translate:0 var(--py,0px)}
+.me{translate:0 calc(var(--py,0px) * -.35)}
+.panels li{transition:flex .6s var(--ease),transform .4s var(--ease),box-shadow .4s}
+.panels li:hover{transform:translateY(-.4rem);box-shadow:0 1.2rem 2rem rgba(0,0,0,.45)}
+.panels li:nth-child(2)[data-r],.panels[data-r].in li{animation:none}
+.tag{background:rgba(255,255,255,.06);backdrop-filter:blur(4px)}
+h2{background:linear-gradient(90deg,var(--ink) 55%,var(--glow));-webkit-background-clip:text;background-clip:text;color:transparent}
+.contacts h2,.process h2,.about h2{background:none;color:inherit}
+.mail::after{content:" →";display:inline-block;transition:transform .35s var(--ease)}
+.mail:hover::after{transform:translateX(.5rem)}
+.dock a{position:relative}
+.dock a.on{box-shadow:0 0 1.2rem rgba(240,178,50,.45)}
+@media (hover:none){.proj:hover h3,.proj:hover .cover{transform:none}}
+
 /* Процесс */
 .process{background-color:var(--cobalt);color:#fff}
 .process h2{margin-bottom:3.5rem}
@@ -275,9 +304,9 @@ h2{font:900 clamp(2rem,5.5vw,4.75rem)/1 var(--display);letter-spacing:-.04em}
 <script>
 (() => {
   // ===== Настройки GitHub: ВСЕ проекты берутся из вашего аккаунта =====
-  const GITHUB_USER = 'WaterLilyBurdock';   // ← впишите ник на GitHub, например 'vladislav'
+  const GITHUB_USER = 'WaterLilyBurdock';
   const GITHUB_MAX = 8;     // сколько репозиториев показывать
-  const GITHUB_SKIP = [portfolio];   // репозитории, которые не показывать, например ['portfolio']
+  const GITHUB_SKIP = ['portfolio'];   // скрываются, только если есть другие репозитории
   // Свои названия/описания поверх GitHub (ключ — имя репозитория): { 'neon-volt': { title: 'NEON VOLT', desc: '...' } }
   const GITHUB_OVERRIDES = {};
   // Обложка: положите в репозиторий файл cover.png (или preview.png) — он подхватится сам,
@@ -348,26 +377,31 @@ h2{font:900 clamp(2rem,5.5vw,4.75rem)/1 var(--display);letter-spacing:-.04em}
     const img = a.querySelector('img'), box = a.querySelector('.cover'), q = d.imgs.slice();
     img.onerror = () => { const s = q.shift(); if (s) img.src = s; else { box.classList.remove('cover--img'); img.remove(); } };
     img.onerror();
-    works.appendChild(a);
+    a.setAttribute('data-r', ''); works.appendChild(a); io.observe(a);
+    a.addEventListener('pointermove', e => { const b = a.getBoundingClientRect(); a.style.setProperty('--mx', (e.clientX - b.left) + 'px'); a.style.setProperty('--my', (e.clientY - b.top) + 'px'); });
   };
 
   (async () => {
     const user = GITHUB_USER.trim();
     if (!user) return note('Впишите свой ник в GITHUB_USER в конце файла — и здесь появятся все ваши проекты с GitHub.');
     const gh = document.getElementById('ghLink'); gh.href = 'https://github.com/' + encodeURIComponent(user); gh.hidden = false;
-    const key = 'gh:' + user; let repos, cached;
+    const sk = document.createElement('div'); sk.className = 'skel'; sk.setAttribute('aria-hidden', 'true'); works.appendChild(sk);
+    const key = 'gh:' + user; let repos, cached, err = 0;
     try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 18e5) repos = cached.d; } catch (e) {}
     if (!repos) {
       try {
         const r = await fetch('https://api.github.com/users/' + encodeURIComponent(user) + '/repos?per_page=100&sort=pushed', { headers: { Accept: 'application/vnd.github+json' } });
-        if (!r.ok) throw 0; repos = await r.json();
+        if (!r.ok) { err = r.status; throw 0; } repos = await r.json();
         try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d: repos })); } catch (e) {}
       } catch (e) { repos = cached && cached.d; }   // лимит API или сеть — берём устаревший кэш
     }
-    if (!repos) return note('Не удалось загрузить проекты с GitHub. Они доступны по кнопке «Все проекты на GitHub» ниже.');
+    sk.remove();
+    if (!repos) return note(err === 404 ? 'Пользователь «' + user + '» не найден на GitHub — проверьте ник в GITHUB_USER.' : err === 403 ? 'GitHub временно ограничил запросы (лимит API). Обновите страницу через час или откройте кнопку «Все проекты на GitHub» ниже.' : 'Не удалось загрузить проекты с GitHub. Проверьте интернет или откройте кнопку «Все проекты на GitHub» ниже.');
     const skip = GITHUB_SKIP.map(x => x.toLowerCase()).concat([user.toLowerCase() + '.github.io']);
-    const list = repos.filter(r => !r.fork && !r.archived && !skip.includes(r.name.toLowerCase()))
-      .sort((x, y) => new Date(y.pushed_at) - new Date(x.pushed_at)).slice(0, GITHUB_MAX);
+    const own = repos.filter(r => !r.fork && !r.archived), byDate = (x, y) => new Date(y.pushed_at) - new Date(x.pushed_at);
+    let list = own.filter(r => !skip.includes(r.name.toLowerCase())).sort(byDate);
+    if (!list.length) list = own.sort(byDate);   // других проектов нет — показываем хотя бы то, что есть
+    list = list.slice(0, GITHUB_MAX);
     if (!list.length) return note('Публичных репозиториев пока нет — выложите проект на GitHub, и он появится здесь.');
     list.forEach((r, i) => {
       const o = GITHUB_OVERRIDES[r.name] || {}, t = r.name.replace(/[-_]+/g, ' ');
@@ -380,6 +414,8 @@ h2{font:900 clamp(2rem,5.5vw,4.75rem)/1 var(--display);letter-spacing:-.04em}
     });
   })();
 
+  const hero = document.querySelector('.hero'); let tick = 0;
+  addEventListener('scroll', () => { if (still || tick) return; tick = requestAnimationFrame(() => { tick = 0; if (scrollY < innerHeight * 1.2) hero.style.setProperty('--py', scrollY * .18 + 'px'); }); }, { passive: true });
   addEventListener('scroll', () => { bar.style.transform = `scaleX(${scrollY / (root.scrollHeight - innerHeight || 1)})`; }, { passive: true });
 })();
 </script>
