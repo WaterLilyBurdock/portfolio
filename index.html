@@ -269,6 +269,45 @@ main:focus{outline:none}
   .service-preview{display:none}
   .cursor{display:none}
 }
+
+/* ---- v3: тёмный блок работ, просмотр index.html, motion ---- */
+.page-progress{position:fixed;inset:0 0 auto;z-index:80;height:2px;background:linear-gradient(90deg,var(--tomato),var(--acid));transform:scaleX(0);transform-origin:left;pointer-events:none}
+.hero__orb{position:absolute;z-index:-1;width:min(34rem,60vw);aspect-ratio:1;border-radius:50%;filter:blur(80px);pointer-events:none}
+.works{background:radial-gradient(60rem 28rem at 86% -6%,rgba(125,140,255,.2),transparent 62%),radial-gradient(40rem 24rem at 4% 100%,rgba(255,90,61,.11),transparent 62%),var(--paper-2);border-block:1px solid var(--line)}
+.works__controls button{border-color:var(--line-dark)}
+.works__filter{border-color:var(--line-dark);color:#cfc9bd}
+.works__filter:hover{border-color:var(--ink)}
+.project{--mx:50%;--my:0px;background:linear-gradient(180deg,var(--surface-2),var(--surface));border-color:var(--line-dark)}
+.project::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(16rem circle at var(--mx) var(--my),color-mix(in srgb,var(--c) 26%,transparent),transparent 70%);transition:opacity .4s}
+.project:hover::after{opacity:1}
+.project__open{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .95rem;border:1px solid var(--c);border-radius:99px;color:var(--ink);font:800 .64rem var(--body);letter-spacing:.08em;text-transform:uppercase;transition:background .3s,color .3s}
+.project__open:hover{background:var(--c);color:var(--paper)}
+.project__open[hidden]{display:none}
+html:has(.viewer[open]){overflow:hidden}
+.viewer{width:min(96vw,80rem);max-width:none;height:min(90svh,56rem);max-height:none;margin:auto;padding:0;border:0;background:transparent;color:var(--ink);overflow:visible}
+.viewer::backdrop{background:rgba(7,6,10,.8);backdrop-filter:blur(8px)}
+.viewer__shell{display:flex;flex-direction:column;height:100%;background:var(--surface);border:1px solid var(--line-dark);box-shadow:0 2.5rem 6rem rgba(0,0,0,.6);overflow:hidden}
+.viewer__bar{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-bottom:1px solid var(--line-dark);background:var(--surface-2)}
+.viewer__title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 .9rem var(--display);letter-spacing:-.03em}
+.viewer__bar a,.viewer__bar button{flex:none;padding:.45rem .85rem;border:1px solid var(--line-dark);border-radius:99px;text-decoration:none;font:800 .62rem var(--body);letter-spacing:.08em;text-transform:uppercase;transition:background .3s,color .3s}
+.viewer__bar a:hover,.viewer__bar button:hover{background:var(--ink);color:var(--paper)}
+.viewer__frame{position:relative;flex:1;min-height:0;background:#fff}
+.viewer__frame iframe{width:100%;height:100%;border:0;background:#fff}
+.viewer__load{position:absolute;inset:0;display:grid;place-items:center;background:var(--surface);color:var(--muted);font:700 .7rem var(--body);letter-spacing:.14em;text-transform:uppercase;transition:opacity .4s}
+.viewer__load.is-done{opacity:0;pointer-events:none}
+.has-cursor .viewer{cursor:auto}
+.has-cursor .viewer a,.has-cursor .viewer button{cursor:pointer}
+@media (max-width:48rem){.viewer{width:100vw;height:100svh}.viewer__bar a#viewerGit{display:none}}
+
+/* ---- v4: лёгкий курсор, эффекты ---- */
+.grain{mix-blend-mode:normal;opacity:.045}
+.hero__orb{filter:none;will-change:transform}
+.cursor-glow{position:fixed;left:0;top:0;z-index:59;width:9rem;height:9rem;margin:-4.5rem 0 0 -4.5rem;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(217,255,87,.13),transparent 65%);transition:opacity .4s;will-change:transform}
+.cursor-glow.is-on{opacity:1}
+.burst{position:fixed;z-index:96;width:.45rem;height:.45rem;border-radius:50%;pointer-events:none;translate:-50% -50%}
+.portrait{transition:transform .5s var(--ease);will-change:transform}
+.btn{transition:color .4s,translate .3s var(--ease)}
+.contact-cta{transition:background .4s,color .4s,translate .3s var(--ease)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .cursor{display:none}
@@ -279,6 +318,7 @@ main:focus{outline:none}
 <a class="skip" href="#main">К содержанию</a>
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"></div>
+<div class="page-progress" id="pageProgress" aria-hidden="true"></div>
 
 <header class="topbar" id="topbar">
   <a class="logo" href="#top" aria-label="Владислав — на главную">V<span>.</span></a>
@@ -403,8 +443,7 @@ main:focus{outline:none}
       </div>
     </div>
     <div class="works__filters" role="group" aria-label="Фильтр проектов">
-      <button type="button" class="works__filter is-active" data-filter="all" aria-pressed="true">Все <span data-count-for="all">0</span></button>
-      <button type="button" class="works__filter" data-filter="sites" aria-pressed="false">Сайты <span data-count-for="sites">0</span></button>
+      <button type="button" class="works__filter is-active" data-filter="sites" aria-pressed="true">Сайты <span data-count-for="sites">0</span></button>
       <button type="button" class="works__filter" data-filter="games" aria-pressed="false">Игры <span data-count-for="games">0</span></button>
       <button type="button" class="works__filter" data-filter="platforms" aria-pressed="false">Платформы <span data-count-for="platforms">0</span></button>
     </div>
@@ -462,11 +501,26 @@ main:focus{outline:none}
   </section>
 </main>
 
+<dialog class="viewer" id="viewer" aria-label="Просмотр проекта">
+  <div class="viewer__shell">
+    <div class="viewer__bar">
+      <span class="viewer__title" id="viewerTitle"></span>
+      <a id="viewerNew" href="#" target="_blank" rel="noopener">Новая вкладка ↗</a>
+      <a id="viewerGit" href="#" target="_blank" rel="noopener">GitHub ↗</a>
+      <button type="button" id="viewerClose">Закрыть ✕</button>
+    </div>
+    <div class="viewer__frame">
+      <iframe id="viewerFrame" title="Страница проекта" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerpolicy="no-referrer"></iframe>
+      <div class="viewer__load" id="viewerLoad">Загружаю index.html…</div>
+    </div>
+  </div>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/motion@14.14.0/dist/motion.js"></script>
 <script>
 (() => {
   const GITHUB_USER = 'WaterLilyBurdock';
-  const GITHUB_MAX = 6;
+  const GITHUB_MAX = 12;
   const GITHUB_SKIP = ['portfolio', 'NeonVolt_backend'];
   const GITHUB_OVERRIDES = {};
   const GITHUB_CATEGORIES = {
@@ -487,8 +541,15 @@ main:focus{outline:none}
 
   const topbar = document.getElementById('topbar');
   const setScrolled = () => topbar.classList.toggle('is-scrolled', scrollY > 24);
-  addEventListener('scroll', setScrolled, { passive: true });
   setScrolled();
+  const pBar = document.getElementById('pageProgress');
+  const setPage = () => { const m = document.documentElement.scrollHeight - innerHeight; pBar.style.transform = 'scaleX(' + (m > 0 ? Math.min(1, scrollY / m) : 0) + ')'; };
+  let scrollTick = false;
+  addEventListener('scroll', () => {
+    if (scrollTick) return; scrollTick = true;
+    requestAnimationFrame(() => { scrollTick = false; setScrolled(); setPage(); });
+  }, { passive: true });
+  setPage();
 
   const navLinks = [...document.querySelectorAll('.nav a')];
   const spy = new IntersectionObserver(es => es.forEach(e => {
@@ -520,6 +581,13 @@ main:focus{outline:none}
     M.animate('.sticker', { opacity: [0, 1], scale: [.6, 1] }, { type: 'spring', stiffness: 200, damping: 14, delay: M.stagger(.12, { startDelay: .6 }) });
     M.animate('.portrait__ring', { rotate: 360 }, { duration: 34, repeat: Infinity, ease: 'linear' });
     M.animate('.contact-cta__ring', { rotate: 360 }, { duration: 26, repeat: Infinity, ease: 'linear' });
+    [{ c: 'rgba(125,140,255,.30)', l: '50%', t: '6%', d: 18 }, { c: 'rgba(255,90,61,.20)', l: '2%', t: '56%', d: 24 }].forEach(o => {
+      const orb = document.createElement('span');
+      orb.className = 'hero__orb'; orb.setAttribute('aria-hidden', 'true');
+      orb.style.cssText = 'left:' + o.l + ';top:' + o.t + ';background:radial-gradient(circle,' + o.c + ',transparent 65%)';
+      hero.appendChild(orb);
+      M.animate(orb, { x: [0, 60, -40, 0], y: [0, -50, 40, 0] }, { duration: o.d, repeat: Infinity, ease: 'easeInOut' });
+    });
     document.querySelectorAll('.sticker').forEach((el, i) => {
       M.animate(el, { y: [0, -9, 0] }, { duration: 4.2 + i * .8, repeat: Infinity, ease: 'easeInOut', delay: i * .5 });
     });
@@ -534,26 +602,72 @@ main:focus{outline:none}
     if (fine) {
       const cursor = document.querySelector('.cursor');
       document.documentElement.classList.add('has-cursor');
+      const glow = document.createElement('div');
+      glow.className = 'cursor-glow'; glow.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(glow);
+      let mx = 0, my = 0, gx = 0, gy = 0, running = false;
+      const loop = () => {
+        gx += (mx - gx) * .14; gy += (my - gy) * .14;
+        glow.style.transform = 'translate3d(' + gx + 'px,' + gy + 'px,0)';
+        if (Math.abs(mx - gx) + Math.abs(my - gy) > .5) requestAnimationFrame(loop); else running = false;
+      };
       addEventListener('pointermove', e => {
-        cursor.classList.add('is-on');
-        M.animate(cursor, { x: e.clientX, y: e.clientY }, { type: 'spring', stiffness: 520, damping: 38, mass: .4 });
+        mx = e.clientX; my = e.clientY;
+        cursor.style.transform = 'translate3d(' + mx + 'px,' + my + 'px,0)';
+        cursor.classList.add('is-on'); glow.classList.add('is-on');
+        if (!running) { running = true; requestAnimationFrame(loop); }
       }, { passive: true });
       document.addEventListener('pointerover', e => {
         cursor.classList.toggle('is-link', !!e.target.closest('a,button,.service'));
       });
       document.addEventListener('pointerout', e => {
-        if (!e.relatedTarget) cursor.classList.remove('is-on');
+        if (!e.relatedTarget) { cursor.classList.remove('is-on'); glow.classList.remove('is-on'); }
       });
     }
 
     const magnetic = (el, strength = .22) => {
       el.addEventListener('pointermove', e => {
         const r = el.getBoundingClientRect();
-        M.animate(el, { x: (e.clientX - r.left - r.width / 2) * strength, y: (e.clientY - r.top - r.height / 2) * strength }, { type: 'spring', stiffness: 240, damping: 18, mass: .5 });
+        el.style.translate = ((e.clientX - r.left - r.width / 2) * strength).toFixed(1) + 'px ' + ((e.clientY - r.top - r.height / 2) * strength).toFixed(1) + 'px';
       });
-      el.addEventListener('pointerleave', () => M.animate(el, { x: 0, y: 0 }, { type: 'spring', stiffness: 240, damping: 20 }));
+      el.addEventListener('pointerleave', () => { el.style.translate = ''; });
     };
     document.querySelectorAll('.btn, .contact-cta').forEach(el => magnetic(el));
+
+    if (fine) {
+      const portrait = document.querySelector('.portrait');
+      let raf = 0, px = 0, py = 0;
+      const frame = () => {
+        raf = 0;
+        const hr = hero.getBoundingClientRect(), lr = titleLine.getBoundingClientRect();
+        const nx = (px - hr.left) / hr.width - .5, ny = (py - hr.top) / hr.height - .5;
+        portrait.style.transform = 'perspective(900px) rotateY(' + (nx * 10).toFixed(2) + 'deg) rotateX(' + (-ny * 8).toFixed(2) + 'deg)';
+        const cy = lr.top + lr.height / 2;
+        chars.forEach(c => {
+          const b = c.getBoundingClientRect();
+          const f = Math.max(0, 1 - Math.hypot(px - (b.left + b.width / 2), py - cy) / 280);
+          c.style.translate = '0 ' + (-f * f * 20).toFixed(1) + 'px';
+        });
+      };
+      hero.addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(frame); }, { passive: true });
+      hero.addEventListener('pointerleave', () => {
+        portrait.style.transform = '';
+        chars.forEach(c => { c.style.translate = ''; });
+      });
+
+      const palette = ['var(--acid)', 'var(--tomato)', 'var(--plum)', 'var(--blue)'];
+      addEventListener('pointerdown', e => {
+        if (e.pointerType !== 'mouse' || e.target.closest('.viewer')) return;
+        for (let i = 0; i < 8; i++) {
+          const d = document.createElement('i');
+          d.className = 'burst'; d.style.background = palette[i % 4];
+          d.style.left = e.clientX + 'px'; d.style.top = e.clientY + 'px';
+          document.body.appendChild(d);
+          const a = Math.PI * 2 * i / 8 + Math.random() * .5, r = 34 + Math.random() * 34;
+          M.animate(d, { x: [0, Math.cos(a) * r], y: [0, Math.sin(a) * r], opacity: [1, 0], scale: [1, .2] }, { duration: .6, ease: [.16, 1, .3, 1] }).then(() => d.remove());
+        }
+      });
+    }
 
     const splitWords = el => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -615,14 +729,14 @@ main:focus{outline:none}
         row.addEventListener('pointerenter', e => {
           pimg.src = row.dataset.img;
           preview.classList.add('is-on');
-          M.animate(preview, { x: e.clientX, y: e.clientY, opacity: 1 }, { type: 'spring', stiffness: 380, damping: 34, mass: .55 });
+          preview.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0)'; M.animate(preview, { opacity: 1 }, { duration: .2 });
         });
         row.addEventListener('pointerleave', () => {
           preview.classList.remove('is-on');
           M.animate(preview, { opacity: 0 }, { duration: .2 });
         });
         row.addEventListener('pointermove', e => {
-          M.animate(preview, { x: e.clientX, y: e.clientY }, { type: 'spring', stiffness: 380, damping: 34, mass: .55 });
+          preview.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0)';
         });
       });
     }
@@ -645,7 +759,7 @@ main:focus{outline:none}
   const filters = [...document.querySelectorAll('.works__filter')];
   const worksStatus = document.getElementById('worksStatus');
   let projectCards = [];
-  let activeFilter = 'all';
+  let activeFilter = 'sites';
 
   const visibleCards = () => projectCards.filter(c => activeFilter === 'all' || c.dataset.category === activeFilter);
   const updateProgress = () => {
@@ -690,7 +804,39 @@ main:focus{outline:none}
       worksStatus.textContent = n ? 'Показано проектов: ' + n + '.' : 'В этой категории пока нет проектов.';
     }
   };
-  filters.forEach(btn => btn.addEventListener('click', () => applyFilter(btn.dataset.filter)));
+  filters.forEach(btn => btn.addEventListener('click', () => {
+    if (btn.dataset.filter === activeFilter) return;
+    applyFilter(btn.dataset.filter);
+    if (useMotion) M.animate(btn, { scale: [.92, 1] }, { type: 'spring', stiffness: 400, damping: 15 });
+  }));
+  track.addEventListener('pointermove', e => {
+    const c = e.target.closest('.project'); if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, { passive: true });
+
+  const viewer = document.getElementById('viewer'), shell = viewer.querySelector('.viewer__shell');
+  const vFrame = document.getElementById('viewerFrame'), vLoad = document.getElementById('viewerLoad');
+  let lastBtn = null;
+  const openViewer = (d, btn) => {
+    lastBtn = btn;
+    document.getElementById('viewerTitle').textContent = d.title;
+    document.getElementById('viewerNew').href = d.demo;
+    document.getElementById('viewerGit').href = d.url;
+    vLoad.classList.remove('is-done');
+    vFrame.onload = () => vLoad.classList.add('is-done');
+    vFrame.src = d.demo;
+    viewer.showModal();
+    if (useMotion) M.animate(shell, { opacity: [0, 1], y: [40, 0], scale: [.96, 1] }, { type: 'spring', stiffness: 220, damping: 26 });
+  };
+  const closeViewer = () => {
+    if (!useMotion) { viewer.close(); return; }
+    M.animate(shell, { opacity: 0, y: 20, scale: .98 }, { duration: .22 }).then(() => viewer.close());
+  };
+  document.getElementById('viewerClose').addEventListener('click', closeViewer);
+  viewer.addEventListener('cancel', e => { e.preventDefault(); closeViewer(); });
+  viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); });
+  viewer.addEventListener('close', () => { vFrame.src = 'about:blank'; if (lastBtn) lastBtn.focus(); });
   viewport.addEventListener('scroll', updateProgress, { passive: true });
   document.querySelectorAll('[data-dir]').forEach(btn => {
     btn.addEventListener('click', () => viewport.scrollBy({ left: (+btn.dataset.dir) * Math.min(viewport.clientWidth * .8, 520), behavior: 'smooth' }));
@@ -723,6 +869,15 @@ main:focus{outline:none}
 
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const colors = ['amber', 'green', 'plum', 'rust', 'blue'];
+  const resolveDemo = async (r, base, user) => {
+    if (/^https?:\/\//.test(r.homepage || '')) return r.homepage;
+    if (r.has_pages) return 'https://' + user.toLowerCase() + '.github.io/' + encodeURIComponent(r.name) + '/';
+    try {
+      const x = await fetch(base + 'index.html', { method: 'HEAD' });
+      if (x.ok) return 'https://htmlpreview.github.io/?' + r.html_url + '/blob/' + encodeURIComponent(r.default_branch || 'main') + '/index.html';
+    } catch (e) {}
+    return '';
+  };
 
   const categoryFor = r => {
     const o = GITHUB_OVERRIDES[r.name] || {};
@@ -744,7 +899,7 @@ main:focus{outline:none}
     a.innerHTML = '<div class="project__cover project__cover--img"><span>' + esc(d.catLabel) + ' · ' + num + '</span><img alt="Обложка проекта ' + esc(d.title) + '" loading="lazy" decoding="async" draggable="false"></div>'
       + '<div class="project__body"><div class="project__meta"><span>' + num + ' / 2026</span><span>' + esc(d.lang) + '</span></div>'
       + '<h3>' + esc(d.title) + '</h3><p>' + esc(d.desc) + '</p>'
-      + '<div class="project__links"><a href="' + esc(d.url) + '" target="_blank" rel="noopener" draggable="false">GitHub ↗</a>'
+      + '<div class="project__links"><button type="button" class="project__open" hidden>Открыть index.html</button><a href="' + esc(d.url) + '" target="_blank" rel="noopener" draggable="false">GitHub ↗</a>'
       + (d.site ? '<a href="' + esc(d.site) + '" target="_blank" rel="noopener" draggable="false">Сайт ↗</a>' : '') + '</div></div>';
     const img = a.querySelector('img'), box = a.querySelector('.project__cover'), q = d.imgs.slice();
     img.onerror = () => { const s = q.shift(); if (s) img.src = s; else { box.classList.remove('project__cover--img'); img.remove(); } };
@@ -761,6 +916,10 @@ main:focus{outline:none}
 
   const animateProjects = () => {
     projectCards = [...track.querySelectorAll('.project')];
+    if (!projectCards.some(c => c.dataset.category === activeFilter)) {
+      const f = ['sites', 'games', 'platforms'].find(k => projectCards.some(c => c.dataset.category === k));
+      if (f) activeFilter = f;
+    }
     updateFilterCounts();
     applyFilter(activeFilter, false, false);
     if (!useMotion || !projectCards.length) return;
@@ -809,7 +968,7 @@ main:focus{outline:none}
       const title = r.name.replace(/[-_]+/g, ' ');
       const category = categoryFor(r);
       const base = 'https://raw.githubusercontent.com/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '/' + encodeURIComponent(r.default_branch || 'HEAD') + '/';
-      card(i, {
+      const el = card(i, {
         title: o.title || title.charAt(0).toUpperCase() + title.slice(1),
         desc: o.desc || r.description || 'Открытый репозиторий на GitHub.',
         lang: r.language || 'GitHub',
@@ -819,6 +978,12 @@ main:focus{outline:none}
         site: /^https?:\/\//.test(r.homepage || '') ? r.homepage : '',
         imgs: [base + 'cover.png', base + 'preview.png', 'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)]
       });
+      resolveDemo(r, base, user).then(demo => {
+        if (!demo) return;
+        const b = el.querySelector('.project__open');
+        b.hidden = false;
+        b.addEventListener('click', () => openViewer({ title: el.querySelector('h3').textContent, url: r.html_url, demo }, b));
+      });
     });
     animateProjects();
   })();
@@ -826,4 +991,3 @@ main:focus{outline:none}
 </script>
 </body>
 </html>
-
