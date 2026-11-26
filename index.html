@@ -748,6 +748,18 @@ window.addEventListener('DOMContentLoaded', () => {
       desc: 'Тёмный графит и золото: прелоадер «накрываем на стол», SplitText, curtain-переходы и модалки блюд.',
       category: 'sites',
       cover: 'images/hero-dish.jpg'
+    },
+    KUBUS: {
+      title: 'KUBUS — Музей архитектуры',
+      desc: 'Многостраничный сайт в швейцарской сетке: вертикальная навигация, Bento-павильоны, переключатель этажей и схема комплекса.',
+      category: 'sites',
+      cover: 'images/hero-hall.jpg'
+    },
+    MODUL: {
+      title: 'MODUL — Онлайн-школа',
+      desc: '6-страничная EdTech-платформа: Bento-Hero, каталог курсов, интерактивный тренажёр, менторы, кейсы и калькулятор тарифов.',
+      category: 'sites',
+      cover: 'images/hero-team.jpg'
     }
   };
   const GITHUB_CATEGORIES = {
@@ -1366,7 +1378,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const loader = note('Загружаю проекты…');
     const key = 'gh:' + user;
     let repos, cached, err = 0;
-    try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 18e5) repos = cached.d; } catch (e) {}
+    try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 6e4) repos = cached.d; } catch (e) {}
     if (!repos) {
       try {
         const r = await fetchWithTimeout('https://api.github.com/users/' + encodeURIComponent(user) + '/repos?per_page=100&sort=pushed', { headers: { Accept: 'application/vnd.github+json' } }, 7000);
