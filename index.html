@@ -1416,11 +1416,11 @@ window.addEventListener('DOMContentLoaded', () => {
         url: r.html_url,
         site: /^https?:\/\//.test(r.homepage || '') ? r.homepage : '',
         imgs: [
-          ...(o.cover ? [base + o.cover] : []),
           base + 'cover.png',
           base + 'cover.jpg',
           base + 'preview.png',
           base + 'preview.jpg',
+          ...(o.cover ? [base + o.cover] : []),
           'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)
         ]
       });
