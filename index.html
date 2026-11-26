@@ -108,11 +108,14 @@ main:focus{outline:none}
 .portrait__face--front .portrait__ring,.portrait__face--front .sticker{transition:opacity .25s ease}
 .portrait__stage.is-flipped .portrait__face--front .portrait__ring,.portrait__stage.is-flipped .portrait__face--front .sticker{opacity:0}
 .portrait__face--back{transform:rotateY(180deg);display:flex;align-items:flex-end}
-.portrait__qr-arch{position:relative;width:100%;height:94%;border-radius:999px 999px 0 0;background:radial-gradient(circle at 50% 24%,rgba(42,59,216,.36),transparent 62%),#121018;border:1px solid rgba(244,239,229,.22);box-shadow:0 2rem 4rem rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2.2rem 1.5rem 1.8rem;text-align:center}
-.portrait__qr-badge{padding:.35rem .85rem;border-radius:999px;border:1px solid rgba(217,255,87,.45);background:rgba(217,255,87,.1);font:700 .62rem/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--acid)}
-.portrait__qr-box{width:min(68%,14.5rem);aspect-ratio:1;padding:.85rem;border-radius:1.15rem;background:#fff;box-shadow:0 1.2rem 2.8rem rgba(0,0,0,.45),0 0 0 4px rgba(255,255,255,.08)}
+.portrait__qr-arch{position:relative;width:100%;height:94%;border-radius:999px 999px 0 0;background:radial-gradient(circle at 50% 22%,rgba(42,59,216,.42),transparent 62%),radial-gradient(circle at 50% 88%,rgba(217,255,87,.08),transparent 52%),#121018;border:1px solid rgba(244,239,229,.22);box-shadow:0 2rem 4rem rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;padding:2.2rem 1.5rem 1.8rem;text-align:center}
+.portrait__qr-arch::after{content:"";position:absolute;inset:1rem;border:1px solid rgba(247,242,232,.14);border-radius:999px 999px 0 0;pointer-events:none}
+.portrait__qr-badge{position:relative;z-index:1;padding:.32rem .85rem;border-radius:999px;border:1px solid rgba(217,255,87,.45);background:rgba(217,255,87,.1);font:700 .6rem/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--acid)}
+.portrait__qr-frame{position:relative;z-index:1;width:min(52%,10.6rem);padding:.6rem;border-radius:1.15rem;background:linear-gradient(145deg,rgba(217,255,87,.35),rgba(147,160,255,.3));box-shadow:0 1.2rem 2.8rem rgba(0,0,0,.5)}
+.portrait__qr-box{width:100%;aspect-ratio:1;padding:.55rem;border-radius:.82rem;background:#fff}
 .portrait__qr-box img{position:static;width:100%;height:100%;object-fit:contain;filter:none}
-.portrait__qr-note{font:700 .64rem/1.45 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.portrait__qr-title{position:relative;z-index:1;font:700 .88rem/1.2 var(--display);letter-spacing:-.02em;color:var(--ivory)}
+.portrait__qr-note{position:relative;z-index:1;font:700 .58rem/1.45 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .portrait__stage.is-flipped .portrait__flipper{transform:rotateY(180deg)}
 .portrait__arch{position:absolute;inset:6% 0 0;border-radius:999px 999px 0 0;background:var(--cobalt);overflow:hidden;box-shadow:0 2rem 4rem rgba(42,59,216,.38)}
 .portrait__arch::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 16%,rgba(255,255,255,.3),transparent 58%)}
@@ -479,9 +482,12 @@ html:has(.viewer[open]){overflow:hidden}
           <div class="portrait__face portrait__face--back">
             <div class="portrait__qr-arch">
               <span class="portrait__qr-badge">VLADISLAV · QR</span>
-              <div class="portrait__qr-box">
-                <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" decoding="async">
+              <div class="portrait__qr-frame">
+                <div class="portrait__qr-box">
+                  <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" decoding="async">
+                </div>
               </div>
+              <span class="portrait__qr-title">Быстрая связь</span>
               <span class="portrait__qr-note">Наведите камеру телефона<br>Нажмите, чтобы вернуть</span>
             </div>
           </div>
