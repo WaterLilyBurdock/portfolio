@@ -102,7 +102,15 @@ main:focus{outline:none}
 
 /* Портрет */
 .portrait{grid-column:9/13;grid-row:1/4;align-self:end;justify-self:end;position:relative;z-index:3;width:100%;max-width:31rem;margin-bottom:1rem;transition:transform .5s var(--ease);will-change:transform}
-.portrait__stage{position:relative;aspect-ratio:3/4}
+.portrait__stage{position:relative;aspect-ratio:3/4;perspective:1200px;cursor:pointer}
+.portrait__flipper{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s var(--ease)}
+.portrait__face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.portrait__face--back{transform:rotateY(180deg);display:flex;align-items:flex-end}
+.portrait__qr-arch{position:relative;width:100%;height:94%;border-radius:999px 999px 0 0;background:var(--surface-2);border:1px solid var(--line-dark);box-shadow:0 2rem 4rem rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem 1.5rem;text-align:center}
+.portrait__qr-box{width:min(72%,15rem);aspect-ratio:1;padding:.75rem;border-radius:1rem;background:#fff;box-shadow:0 1rem 2.5rem rgba(0,0,0,.35)}
+.portrait__qr-box img{position:static;width:100%;height:100%;object-fit:contain;filter:none}
+.portrait__qr-note{font:700 .66rem/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--acid)}
+.portrait__stage.is-flipped .portrait__flipper{transform:rotateY(180deg)}
 .portrait__arch{position:absolute;inset:6% 0 0;border-radius:999px 999px 0 0;background:var(--cobalt);overflow:hidden;box-shadow:0 2rem 4rem rgba(42,59,216,.38)}
 .portrait__arch::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 16%,rgba(255,255,255,.3),transparent 58%)}
 .portrait__arch::after{content:"";position:absolute;inset:1.1rem;border:1px solid rgba(247,242,232,.3);border-radius:999px 999px 0 0}
@@ -449,17 +457,29 @@ html:has(.viewer[open]){overflow:hidden}
     <h1 class="hero__title" id="hero-name" aria-label="Владислав"><span class="hero__line" aria-hidden="true">Владислав</span></h1>
 
     <figure class="portrait">
-      <div class="portrait__stage">
-        <div class="portrait__arch" aria-hidden="true"></div>
-        <img src="me.png" width="900" height="1200" alt="Портрет: Владислав" fetchpriority="high" decoding="async" onerror="this.style.display='none'">
-        <svg class="portrait__ring" viewBox="0 0 400 400" aria-hidden="true">
-          <defs><path id="portraitCircle" d="M200,200 m-168,0 a168,168 0 1,1 336,0 a168,168 0 1,1 -336,0"/></defs>
-          <text><textPath href="#portraitCircle">Available for projects · Since 2021 · </textPath></text>
-        </svg>
-        <span class="sticker sticker--a" aria-hidden="true">Python / Flask</span>
-        <span class="sticker sticker--b" aria-hidden="true">Telegram bots</span>
+      <div class="portrait__stage" id="portraitFlip" role="button" tabindex="0" aria-pressed="false" aria-label="Нажмите, чтобы перевернуть портрет и открыть QR-код">
+        <div class="portrait__flipper" id="portraitFlipper">
+          <div class="portrait__face portrait__face--front">
+            <div class="portrait__arch" aria-hidden="true"></div>
+            <img src="me.png" width="900" height="1200" alt="Портрет: Владислав" fetchpriority="high" decoding="async" onerror="this.style.display='none'">
+            <svg class="portrait__ring" viewBox="0 0 400 400" aria-hidden="true">
+              <defs><path id="portraitCircle" d="M200,200 m-168,0 a168,168 0 1,1 336,0 a168,168 0 1,1 -336,0"/></defs>
+              <text><textPath href="#portraitCircle">Available for projects · Since 2021 · </textPath></text>
+            </svg>
+            <span class="sticker sticker--a" aria-hidden="true">Python / Flask</span>
+            <span class="sticker sticker--b" aria-hidden="true">Telegram bots</span>
+          </div>
+          <div class="portrait__face portrait__face--back">
+            <div class="portrait__qr-arch">
+              <div class="portrait__qr-box">
+                <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" decoding="async">
+              </div>
+              <span class="portrait__qr-note">QR-код · Нажмите, чтобы вернуть</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <figcaption class="portrait__cap"><span>Fig. 01</span><span>Vladislav, 2026</span></figcaption>
+      <figcaption class="portrait__cap"><span>Fig. 01 · Нажмите для QR</span><span>Vladislav, 2026</span></figcaption>
     </figure>
 
     <div class="hero__foot">
@@ -669,6 +689,7 @@ html:has(.viewer[open]){overflow:hidden}
         <p class="contacts__copy">Опишите задачу — отвечу со сроками и оценкой.</p>
         <div class="contacts__links">
           <a href="https://t.me/WaterLilyBurdock" target="_blank" rel="noopener noreferrer">Telegram ↗</a>
+          <a href="https://wa.me/79518334949" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
           <a id="ghLink" href="#" target="_blank" rel="noopener noreferrer" hidden>GitHub ↗</a>
           <a href="#top">Наверх ↑</a>
         </div>
@@ -969,6 +990,22 @@ window.addEventListener('DOMContentLoaded', () => {
     M.animate('.hero__meta, .hero__lead, .btn, .scroll-cue', { y: [22, 0], opacity: [0, 1] }, { duration: .9, ease: [.16, 1, .3, 1], delay: M.stagger(.08, { startDelay: .3 }) });
     M.animate('.portrait__stage', { y: [80, 0], opacity: [0, 1], scale: [.94, 1] }, { type: 'spring', stiffness: 80, damping: 18, delay: .15 });
     M.animate('.sticker', { opacity: [0, 1], scale: [.6, 1] }, { type: 'spring', stiffness: 200, damping: 14, delay: M.stagger(.12, { startDelay: .6 }) });
+
+    const portraitStage = document.getElementById('portraitFlip');
+    const portraitFlipper = document.getElementById('portraitFlipper');
+    if (portraitStage && portraitFlipper) {
+      let flipped = false;
+      const toggleFlip = () => {
+        flipped = !flipped;
+        portraitStage.classList.toggle('is-flipped', flipped);
+        portraitStage.setAttribute('aria-pressed', String(flipped));
+        M.animate(portraitFlipper, { rotateY: flipped ? 180 : 0, scale: [.96, 1] }, { duration: .72, ease: [.16, 1, .3, 1] });
+      };
+      portraitStage.addEventListener('click', toggleFlip);
+      portraitStage.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlip(); }
+      });
+    }
     M.animate('.portrait__ring', { rotate: 360 }, { duration: 34, repeat: Infinity, ease: 'linear' });
     M.animate('.contact-cta__ring', { rotate: 360 }, { duration: 26, repeat: Infinity, ease: 'linear' });
 
