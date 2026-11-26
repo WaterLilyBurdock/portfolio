@@ -101,15 +101,18 @@ main:focus{outline:none}
 @keyframes scrollLine{to{top:120%}}
 
 /* Портрет */
-.portrait{grid-column:9/13;grid-row:1/4;align-self:end;justify-self:end;position:relative;z-index:3;width:100%;max-width:31rem;margin-bottom:1rem;transition:transform .5s var(--ease);will-change:transform}
-.portrait__stage{position:relative;aspect-ratio:3/4;perspective:1200px;cursor:pointer}
-.portrait__flipper{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s var(--ease)}
+.portrait{grid-column:9/13;grid-row:1/4;align-self:end;justify-self:end;position:relative;z-index:3;width:100%;max-width:31rem;margin-bottom:1rem}
+.portrait__stage{position:relative;aspect-ratio:3/4;perspective:1400px;cursor:pointer}
+.portrait__flipper{position:relative;width:100%;height:100%;transform-style:preserve-3d;will-change:transform;transition:transform .62s cubic-bezier(.22,1,.36,1)}
 .portrait__face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.portrait__face--front .portrait__ring,.portrait__face--front .sticker{transition:opacity .25s ease}
+.portrait__stage.is-flipped .portrait__face--front .portrait__ring,.portrait__stage.is-flipped .portrait__face--front .sticker{opacity:0}
 .portrait__face--back{transform:rotateY(180deg);display:flex;align-items:flex-end}
-.portrait__qr-arch{position:relative;width:100%;height:94%;border-radius:999px 999px 0 0;background:var(--surface-2);border:1px solid var(--line-dark);box-shadow:0 2rem 4rem rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem 1.5rem;text-align:center}
-.portrait__qr-box{width:min(72%,15rem);aspect-ratio:1;padding:.75rem;border-radius:1rem;background:#fff;box-shadow:0 1rem 2.5rem rgba(0,0,0,.35)}
+.portrait__qr-arch{position:relative;width:100%;height:94%;border-radius:999px 999px 0 0;background:radial-gradient(circle at 50% 24%,rgba(42,59,216,.36),transparent 62%),#121018;border:1px solid rgba(244,239,229,.22);box-shadow:0 2rem 4rem rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2.2rem 1.5rem 1.8rem;text-align:center}
+.portrait__qr-badge{padding:.35rem .85rem;border-radius:999px;border:1px solid rgba(217,255,87,.45);background:rgba(217,255,87,.1);font:700 .62rem/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--acid)}
+.portrait__qr-box{width:min(68%,14.5rem);aspect-ratio:1;padding:.85rem;border-radius:1.15rem;background:#fff;box-shadow:0 1.2rem 2.8rem rgba(0,0,0,.45),0 0 0 4px rgba(255,255,255,.08)}
 .portrait__qr-box img{position:static;width:100%;height:100%;object-fit:contain;filter:none}
-.portrait__qr-note{font:700 .66rem/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--acid)}
+.portrait__qr-note{font:700 .64rem/1.45 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .portrait__stage.is-flipped .portrait__flipper{transform:rotateY(180deg)}
 .portrait__arch{position:absolute;inset:6% 0 0;border-radius:999px 999px 0 0;background:var(--cobalt);overflow:hidden;box-shadow:0 2rem 4rem rgba(42,59,216,.38)}
 .portrait__arch::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 16%,rgba(255,255,255,.3),transparent 58%)}
@@ -292,18 +295,22 @@ main:focus{outline:none}
 .contacts h2{font:900 clamp(3rem,9vw,8.5rem)/.88 var(--display);letter-spacing:-.075em}
 .contacts h2 em{font:italic 500 .88em var(--serif);letter-spacing:-.02em;color:var(--acid);padding-left:.08em}
 .contacts__copy{max-width:28rem;margin-top:2rem;color:var(--muted)}
-.contacts__links{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:2.5rem}
-.contacts__links a{padding-bottom:.2rem;border-bottom:1px solid rgba(247,242,232,.4);text-decoration:none;font:800 .68rem var(--body);letter-spacing:.1em;text-transform:uppercase;transition:color .3s,border-color .3s}
-.contacts__links a:hover{color:var(--acid);border-color:var(--acid)}
+.contacts__links{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2rem}
+.contacts__links a{display:inline-flex;align-items:center;gap:.45rem;padding:.75rem 1.2rem;border:1px solid var(--line-dark);border-radius:99px;background:rgba(255,255,255,.04);text-decoration:none;font:800 .68rem var(--body);letter-spacing:.08em;text-transform:uppercase;transition:background .25s,color .25s,border-color .25s,transform .25s var(--ease)}
+.contacts__links a:hover{background:var(--acid);color:var(--paper);border-color:var(--acid);transform:translateY(-2px)}
+.pricing__cta--wa{margin-top:.65rem;background:transparent;border-color:rgba(69,214,164,.55);color:var(--green)}
+.pricing__cta--wa::before{background:var(--green)}
+.pricing__cta--wa:hover{color:var(--paper);border-color:var(--green)}
 .contact-cta{position:relative;justify-self:end;display:grid;place-items:center;width:clamp(12rem,20vw,16rem);aspect-ratio:1;border-radius:50%;background:var(--tomato);color:var(--paper);text-align:center;text-decoration:none;font:800 .74rem/1.4 var(--body);letter-spacing:.1em;text-transform:uppercase;transition:background .4s,color .4s,translate .3s var(--ease)}
 .contact-cta:hover{background:var(--acid)}
 .contact-cta__ring{position:absolute;inset:-1.4rem;width:calc(100% + 2.8rem);height:calc(100% + 2.8rem);pointer-events:none;color:var(--ivory)}
 .contact-cta__ring text{font:700 9px var(--body);letter-spacing:.3em;text-transform:uppercase;fill:currentColor}
 .contact-cta__arrow{margin-top:.35rem;font-size:1.4rem;transition:transform .4s}
 .contact-cta:hover .contact-cta__arrow{transform:translate(.3rem,-.3rem)}
-.footer{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:clamp(4.5rem,10vw,9rem);padding-top:1.5rem;border-top:1px solid var(--line-dark);font:700 .6rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.footer a{color:var(--ivory);text-decoration:none}
-.footer a:hover{color:var(--acid)}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:clamp(4.5rem,10vw,9rem);padding-top:1.5rem;border-top:1px solid var(--line-dark);font:700 .6rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.footer__btns{display:flex;gap:.6rem;flex-wrap:wrap}
+.footer__btn{display:inline-flex;align-items:center;gap:.35rem;padding:.55rem 1rem;border:1px solid var(--line-dark);border-radius:99px;background:rgba(255,255,255,.03);color:var(--ivory);text-decoration:none;transition:background .25s,color .25s,border-color .25s,transform .2s var(--ease)}
+.footer__btn:hover{background:var(--acid);color:var(--paper);border-color:var(--acid);transform:translateY(-1px)}
 
 /* Нижнее мобильное меню (скрыто на десктопе) */
 .mob-nav{display:none}
@@ -471,10 +478,11 @@ html:has(.viewer[open]){overflow:hidden}
           </div>
           <div class="portrait__face portrait__face--back">
             <div class="portrait__qr-arch">
+              <span class="portrait__qr-badge">VLADISLAV · QR</span>
               <div class="portrait__qr-box">
                 <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" decoding="async">
               </div>
-              <span class="portrait__qr-note">QR-код · Нажмите, чтобы вернуть</span>
+              <span class="portrait__qr-note">Наведите камеру телефона<br>Нажмите, чтобы вернуть</span>
             </div>
           </div>
         </div>
@@ -659,6 +667,9 @@ html:has(.viewer[open]){overflow:hidden}
         <a class="btn pricing__cta" id="pricingCta" href="https://t.me/WaterLilyBurdock" target="_blank" rel="noopener noreferrer">
           <span>Отправить в Telegram</span><span class="btn__arrow" aria-hidden="true">↗</span>
         </a>
+        <a class="btn pricing__cta pricing__cta--wa" id="pricingWa" href="https://wa.me/79518334949" target="_blank" rel="noopener noreferrer">
+          <span>Написать в WhatsApp</span><span class="btn__arrow" aria-hidden="true">↗</span>
+        </a>
         <p class="pricing__note">Точная стоимость и сроки — после короткого обсуждения задачи.</p>
       </aside>
     </div>
@@ -704,9 +715,13 @@ html:has(.viewer[open]){overflow:hidden}
       </a>
     </div>
     <footer class="footer">
-      <span>Владислав, независимый разработчик</span>
-      <span>2026</span>
-      <a href="#top">Наверх ↑</a>
+      <span>Владислав, независимый разработчик · 2026</span>
+      <div class="footer__btns">
+        <a class="footer__btn" href="https://t.me/WaterLilyBurdock" target="_blank" rel="noopener noreferrer">Telegram ↗</a>
+        <a class="footer__btn" href="https://wa.me/79518334949" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
+        <a class="footer__btn" href="https://github.com/WaterLilyBurdock" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a class="footer__btn" href="#top">Наверх ↑</a>
+      </div>
     </footer>
   </section>
 </main>
@@ -955,6 +970,8 @@ window.addEventListener('DOMContentLoaded', () => {
         ? 'Привет! Интересует проект:\n• ' + selected.map(el => el.dataset.name).join('\n• ') + discountLine + '\nИтого ориентир: от ' + fmt(finalSum) + ' ₽'
         : 'Привет! Хочу обсудить проект.';
       ctaEl.href = 'https://t.me/WaterLilyBurdock?text=' + encodeURIComponent(msg);
+      const waEl = document.getElementById('pricingWa');
+      if (waEl) waEl.href = 'https://wa.me/79518334949?text=' + encodeURIComponent(msg);
     };
 
     items.forEach(el => {
@@ -992,14 +1009,12 @@ window.addEventListener('DOMContentLoaded', () => {
     M.animate('.sticker', { opacity: [0, 1], scale: [.6, 1] }, { type: 'spring', stiffness: 200, damping: 14, delay: M.stagger(.12, { startDelay: .6 }) });
 
     const portraitStage = document.getElementById('portraitFlip');
-    const portraitFlipper = document.getElementById('portraitFlipper');
-    if (portraitStage && portraitFlipper) {
+    if (portraitStage) {
       let flipped = false;
       const toggleFlip = () => {
         flipped = !flipped;
         portraitStage.classList.toggle('is-flipped', flipped);
         portraitStage.setAttribute('aria-pressed', String(flipped));
-        M.animate(portraitFlipper, { rotateY: flipped ? 180 : 0, scale: [.96, 1] }, { duration: .72, ease: [.16, 1, .3, 1] });
       };
       portraitStage.addEventListener('click', toggleFlip);
       portraitStage.addEventListener('keydown', (e) => {
