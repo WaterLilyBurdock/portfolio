@@ -188,7 +188,9 @@ main:focus{outline:none}
 .project::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(16rem circle at var(--mx) var(--my),color-mix(in srgb,var(--c) 26%,transparent),transparent 70%);transition:opacity .4s}
 .project:hover{transform:translateY(-.6rem)}
 .project:hover::after{opacity:1}
-.project__cover{position:relative;aspect-ratio:16/10;overflow:hidden;background:#08070b;border-bottom:1px solid rgba(244,239,229,.12)}
+.project__cover{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(110deg,#111016 8%,#1c1924 18%,#111016 33%);background-size:200% 100%;animation:coverShimmer 1.4s linear infinite;border-bottom:1px solid rgba(244,239,229,.12)}
+.project__cover.is-loaded{animation:none;background:#08070b}
+@keyframes coverShimmer{to{background-position-x:-200%}}
 .project__cover::before{content:"";position:absolute;left:-12%;top:14%;width:55%;aspect-ratio:1;border-radius:50%;background:var(--c);border:1px solid rgba(247,242,232,.3)}
 .project__cover--img::before{display:none}
 .project__cover::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(11,10,14,.08),rgba(11,10,14,.48));transition:opacity .5s}
@@ -546,6 +548,7 @@ html:has(.viewer[open]){overflow:hidden}
       </div>
     </div>
     <div class="works__filters" role="group" aria-label="Фильтр проектов">
+      <button type="button" class="works__filter" data-filter="all" aria-pressed="false">Все <span data-count-for="all">0</span></button>
       <button type="button" class="works__filter is-active" data-filter="sites" aria-pressed="true">Сайты <span data-count-for="sites">0</span></button>
       <button type="button" class="works__filter" data-filter="games" aria-pressed="false">Игры <span data-count-for="games">0</span></button>
       <button type="button" class="works__filter" data-filter="platforms" aria-pressed="false">Платформы <span data-count-for="platforms">0</span></button>
@@ -733,7 +736,20 @@ window.addEventListener('DOMContentLoaded', () => {
   const GITHUB_USER = 'WaterLilyBurdock';
   const GITHUB_MAX = 12;
   const GITHUB_SKIP = ['portfolio', 'NeonVolt_backend'];
-  const GITHUB_OVERRIDES = {};
+  const GITHUB_OVERRIDES = {
+    Zerno: {
+      title: 'ZERNO — Specialty Coffee',
+      desc: 'Минималистичный лендинг для specialty-кофейни: тёплая палитра, GSAP ScrollTrigger, курсор-зерно и интерактивные карточки.',
+      category: 'sites',
+      cover: 'images/hero-coffee.jpg'
+    },
+    SABLE: {
+      title: 'SABLE — Авторская кухня',
+      desc: 'Тёмный графит и золото: прелоадер «накрываем на стол», SplitText, curtain-переходы и модалки блюд.',
+      category: 'sites',
+      cover: 'images/hero-dish.jpg'
+    }
+  };
   const GITHUB_CATEGORIES = {
     'crystal combo': 'games',
     'neonvolt': 'games',
@@ -1030,8 +1046,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
       const preview = document.getElementById('servicePreview');
       const pimg = preview.querySelector('img');
+      const serviceFallback = title => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><rect width="800" height="500" fill="#131118"/><circle cx="640" cy="120" r="180" fill="#2a3bd8" opacity="0.28"/><text x="56" y="270" fill="#f4efe5" font-family="sans-serif" font-size="44" font-weight="700">${title}</text></svg>`
+      );
+      pimg.onerror = () => { pimg.src = serviceFallback(pimg.alt || 'Услуга'); };
       document.querySelectorAll('.service').forEach(row => {
+        const thumb = row.querySelector('.service__thumb');
+        const label = row.querySelector('h3')?.textContent || 'Услуга';
+        if (thumb) thumb.onerror = () => { thumb.src = serviceFallback(label); };
         row.addEventListener('pointerenter', e => {
+          pimg.alt = label;
           pimg.src = row.dataset.img;
           preview.classList.add('is-on');
           preview.style.transform = 'translate3d(' + e.clientX + 'px,' + e.clientY + 'px,0)';
@@ -1232,6 +1256,37 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const colors = ['amber', 'green', 'plum', 'rust', 'blue'];
+  const colorHexMap = { amber: '#f2b544', green: '#45d6a4', plum: '#ff6f9f', rust: '#ff8a4c', blue: '#7d8cff' };
+  const makeCoverSvg = (title, catLabel, hex) => {
+    const safeTitle = esc(String(title).slice(0, 28));
+    const safeCat = esc(catLabel);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+      <defs>
+        <radialGradient id="g" cx="82%" cy="18%" r="65%">
+          <stop offset="0%" stop-color="${hex}" stop-opacity="0.38"/>
+          <stop offset="100%" stop-color="#0b0a0e" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="800" height="500" fill="#111016"/>
+      <rect width="800" height="500" fill="url(#g)"/>
+      <path d="M0 125H800M0 250H800M0 375H800M200 0V500M400 0V500M600 0V500" stroke="#f4efe5" stroke-opacity="0.06"/>
+      <text x="56" y="215" fill="${hex}" font-family="sans-serif" font-size="20" font-weight="700" letter-spacing="4">${safeCat.toUpperCase()}</text>
+      <text x="56" y="276" fill="#f4efe5" font-family="sans-serif" font-size="46" font-weight="800">${safeTitle}</text>
+      <rect x="56" y="314" width="84" height="4" rx="2" fill="${hex}"/>
+    </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  };
+
+  const openProjectWindow = url => {
+    const w = Math.min(1320, Math.max(960, screen.availWidth - 120));
+    const h = Math.min(860, Math.max(640, screen.availHeight - 100));
+    const left = Math.round((screen.availWidth - w) / 2);
+    const top = Math.round((screen.availHeight - h) / 2);
+    const features = `popup=yes,width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no,resizable=yes,scrollbars=yes`;
+    const win = window.open(url, '_blank', features);
+    if (!win) window.open(url, '_blank', 'noopener,noreferrer');
+    else win.opener = null;
+  };
   const resolveDemo = async (r, base, user) => {
     if (/^https?:\/\//.test(r.homepage || '')) return r.homepage;
     if (r.has_pages) return 'https://' + user.toLowerCase() + '.github.io/' + encodeURIComponent(r.name) + '/';
@@ -1254,17 +1309,25 @@ window.addEventListener('DOMContentLoaded', () => {
   const card = (i, d) => {
     const a = document.createElement('article');
     const num = String(i + 1).padStart(2, '0');
+    const colorName = colors[i % colors.length];
     a.className = 'project';
     a.dataset.category = d.category;
-    a.style.setProperty('--c', 'var(--' + colors[i % colors.length] + ')');
-    a.innerHTML = '<div class="project__cover project__cover--img"><span>' + esc(d.catLabel) + ' · ' + num + '</span><img width="800" height="500" alt="Обложка проекта ' + esc(d.title) + '" loading="lazy" decoding="async" draggable="false"></div>'
+    a.style.setProperty('--c', 'var(--' + colorName + ')');
+    a.innerHTML = '<div class="project__cover project__cover--img"><span>' + esc(d.catLabel) + ' · ' + num + '</span><img width="800" height="500" alt="Обложка проекта ' + esc(d.title) + '" decoding="async" draggable="false"></div>'
       + '<div class="project__body"><div class="project__meta"><span>' + num + ' / 2026</span><span>' + esc(d.lang) + '</span></div>'
       + '<h3>' + esc(d.title) + '</h3><p>' + esc(d.desc) + '</p>'
-      + '<div class="project__links"><button type="button" class="project__open" hidden>Открыть index.html</button><a href="' + esc(d.url) + '" target="_blank" rel="noopener noreferrer" draggable="false">GitHub ↗</a>'
+      + '<div class="project__links"><button type="button" class="project__open" hidden>Посмотреть ↗</button><a href="' + esc(d.url) + '" target="_blank" rel="noopener noreferrer" draggable="false">GitHub ↗</a>'
       + (d.site ? '<a href="' + esc(d.site) + '" target="_blank" rel="noopener noreferrer" draggable="false">Сайт ↗</a>' : '') + '</div></div>';
     const img = a.querySelector('img'), box = a.querySelector('.project__cover'), q = d.imgs.slice();
-    img.onerror = () => { const s = q.shift(); if (s) img.src = s; else { box.classList.remove('project__cover--img'); img.remove(); } };
-    img.onerror();
+    const fallbackSvg = makeCoverSvg(d.title, d.catLabel, colorHexMap[colorName] || '#7d8cff');
+    const nextImg = () => {
+      const s = q.shift();
+      if (s) img.src = s;
+      else { img.onerror = null; img.src = fallbackSvg; box.classList.add('is-loaded'); }
+    };
+    img.onload = () => box.classList.add('is-loaded');
+    img.onerror = nextImg;
+    nextImg();
     track.appendChild(a);
     return a;
   };
@@ -1337,13 +1400,20 @@ window.addEventListener('DOMContentLoaded', () => {
         catLabel: CARD_CATEGORY_LABELS[category] || 'Проект',
         url: r.html_url,
         site: /^https?:\/\//.test(r.homepage || '') ? r.homepage : '',
-        imgs: [base + 'cover.png', base + 'preview.png', 'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)]
+        imgs: [
+          ...(o.cover ? [base + o.cover] : []),
+          base + 'cover.png',
+          base + 'cover.jpg',
+          base + 'preview.png',
+          base + 'preview.jpg',
+          'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)
+        ]
       });
       resolveDemo(r, base, user).then(demo => {
         if (!demo) return;
         const b = el.querySelector('.project__open');
         b.hidden = false;
-        b.addEventListener('click', () => openViewer({ title: el.querySelector('h3').textContent, url: r.html_url, demo }, b));
+        b.addEventListener('click', () => openProjectWindow(demo));
       });
     });
     animateProjects();
