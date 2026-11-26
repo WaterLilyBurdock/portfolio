@@ -1377,21 +1377,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const loader = note('Загружаю проекты…');
     const key = 'gh:' + user;
+    const FALLBACK_REPOS = [
+      { name: 'MODUL', description: '6-страничная EdTech-платформа онлайн-школы', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/MODUL', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T18:28:00Z' },
+      { name: 'KUBUS', description: 'Многостраничный сайт музея архитектуры в швейцарской сетке', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/KUBUS', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T18:00:00Z' },
+      { name: 'SABLE', description: 'Лендинг-визитка ресторана авторской кухни с прелоадером и SplitText', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/SABLE', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T17:08:00Z' },
+      { name: 'Zerno', description: 'Минималистичный лендинг specialty-кофейни на GSAP ScrollTrigger', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/Zerno', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T17:07:00Z' }
+    ];
     let repos, cached, err = 0;
-    try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 6e4) repos = cached.d; } catch (e) {}
+    try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 3e5) repos = cached.d; } catch (e) {}
     if (!repos) {
       try {
         const r = await fetchWithTimeout('https://api.github.com/users/' + encodeURIComponent(user) + '/repos?per_page=100&sort=pushed', { headers: { Accept: 'application/vnd.github+json' } }, 7000);
         if (!r.ok) { err = r.status; throw 0; }
         repos = await r.json();
         try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d: repos })); } catch (e) {}
-      } catch (e) { repos = cached && cached.d; }
+      } catch (e) { repos = (cached && cached.d) || FALLBACK_REPOS; }
     }
     loader.remove();
-    if (!repos) {
-      note(err === 404 ? 'Пользователь «' + user + '» не найден на GitHub.' : err === 403 ? 'GitHub временно ограничил запросы. Откройте профиль по ссылке ниже.' : 'Не удалось загрузить проекты с GitHub. Проверьте интернет или откройте профиль ниже.');
-      return;
-    }
+    if (!repos || !repos.length) repos = FALLBACK_REPOS;
     const skip = GITHUB_SKIP.map(x => x.toLowerCase()).concat([user.toLowerCase() + '.github.io']);
     const own = repos.filter(r => !r.fork && !r.archived);
     const byDate = (x, y) => new Date(y.pushed_at) - new Date(x.pushed_at);
