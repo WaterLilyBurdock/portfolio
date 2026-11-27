@@ -43,8 +43,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 :focus:not(:focus-visible){outline:none}
 :focus-visible{outline:2px solid var(--tomato);outline-offset:4px}
 section{scroll-margin-top:5rem}
-/* Ускорение первоначальной отрисовки нижних секций */
-.about,.services,.works,.pricing,.process,.contacts{content-visibility:auto;contain-intrinsic-size:1px 650px}
+/* Ускорение первоначальной отрисовки нижних секций (без блокировки картинок в services/works) */
+.about,.pricing,.process,.contacts{content-visibility:auto;contain-intrinsic-size:1px 650px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* Служебные слои и кастомный курсор */
@@ -550,21 +550,21 @@ html:has(.viewer[open]){overflow:hidden}
         <span class="service__num">01</span>
         <div class="service__main"><h3>Сайты под ключ</h3><p>Дизайн, вёрстка, домен и SSL.</p></div>
         <div class="service__tags"><span>Design</span><span>Code</span><span>Deploy</span></div>
-        <img class="service__thumb" src="sait.png" width="800" height="500" alt="Пример: сайты под ключ" loading="lazy" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="sait.png" width="800" height="500" alt="Пример: сайты под ключ" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
       <a class="service" href="#pricing" data-img="bot.png">
         <span class="service__num">02</span>
         <div class="service__main"><h3>Telegram-боты</h3><p>Заявки, каталоги, рассылки и API.</p></div>
         <div class="service__tags"><span>Python</span><span>API</span><span>Automation</span></div>
-        <img class="service__thumb" src="bot.png" width="800" height="500" alt="Пример: Telegram-боты" loading="lazy" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="bot.png" width="800" height="500" alt="Пример: Telegram-боты" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
       <a class="service" href="#pricing" data-img="platform.png">
         <span class="service__num">03</span>
         <div class="service__main"><h3>Платформы и приложения</h3><p>Аккаунты, роли, PostgreSQL, Flet и React.</p></div>
         <div class="service__tags"><span>Flask</span><span>PostgreSQL</span><span>React</span></div>
-        <img class="service__thumb" src="platform.png" width="800" height="500" alt="Пример: платформы и приложения" loading="lazy" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="platform.png" width="800" height="500" alt="Пример: платформы и приложения" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
     </div>
@@ -1395,18 +1395,26 @@ window.addEventListener('DOMContentLoaded', () => {
       + (d.site ? '<a href="' + esc(d.site) + '" target="_blank" rel="noopener noreferrer" draggable="false">Сайт ↗</a>' : '') + '</div></div>';
     const img = a.querySelector('img'), box = a.querySelector('.project__cover');
     const fallbackSvg = makeCoverSvg(d.title, d.catLabel, colorHexMap[colorName] || '#7d8cff');
+    const sources = [...(d.covers || []), fallbackSvg];
     let imgTimer = 0;
     const finishImg = () => { clearTimeout(imgTimer); box.classList.add('is-loaded'); };
-    const useFallback = () => {
-      clearTimeout(imgTimer);
-      img.onerror = null;
-      img.src = fallbackSvg;
-      finishImg();
+    const nextSrc = () => {
+      const s = sources.shift();
+      if (s) {
+        if (s === fallbackSvg) { clearTimeout(imgTimer); img.onerror = null; }
+        img.src = s;
+      }
     };
     img.onload = finishImg;
-    img.onerror = useFallback;
-    img.src = d.coverUrl;
-    imgTimer = setTimeout(() => { if (!box.classList.contains('is-loaded')) useFallback(); }, 3500);
+    img.onerror = nextSrc;
+    nextSrc();
+    imgTimer = setTimeout(() => {
+      if (!box.classList.contains('is-loaded')) {
+        img.onerror = null;
+        img.src = fallbackSvg;
+        finishImg();
+      }
+    }, 12000);
     track.appendChild(a);
     return a;
   };
@@ -1483,13 +1491,13 @@ window.addEventListener('DOMContentLoaded', () => {
       const category = categoryFor(r);
       const branch = r.default_branch || 'main';
       const base = 'https://raw.githubusercontent.com/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '/' + encodeURIComponent(branch) + '/';
-      /* У каждого репозитория в корне есть cover.png — грузим его напрямую без лишних запросов */
-      const coverUrl = base + 'cover.png';
+      const cdnCover = 'https://cdn.jsdelivr.net/gh/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '@' + encodeURIComponent(branch) + '/cover.png';
+      const covers = [cdnCover, base + 'cover.png'];
       if (i < 4) {
         const preload = document.createElement('link');
         preload.rel = 'preload';
         preload.as = 'image';
-        preload.href = coverUrl;
+        preload.href = cdnCover;
         document.head.appendChild(preload);
       }
       const el = card(i, {
@@ -1500,7 +1508,7 @@ window.addEventListener('DOMContentLoaded', () => {
         catLabel: CARD_CATEGORY_LABELS[category] || 'Проект',
         url: r.html_url,
         site: /^https?:\/\//.test(r.homepage || '') ? r.homepage : '',
-        coverUrl
+        covers
       });
       resolveDemo(r, base, user).then(demo => {
         if (!demo) return;
