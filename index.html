@@ -1474,12 +1474,20 @@ window.addEventListener('DOMContentLoaded', () => {
     loader.remove();
     if (!repos || !repos.length) repos = FALLBACK_REPOS;
     const norm = x => String(x).toLowerCase().replace(/[-_\s]+/g, ' ').trim();
+    const isLastRepo = r => norm(r.name) === 'starlink svo';
     const skip = GITHUB_SKIP.map(norm).concat([norm(user + '.github.io')]);
     const own = repos.filter(r => !r.fork && !r.archived);
-    const byDate = (x, y) => new Date(y.pushed_at) - new Date(x.pushed_at);
-    let list = own.filter(r => !skip.includes(norm(r.name))).sort(byDate);
-    if (!list.length) list = own.sort(byDate);
-    list = list.slice(0, GITHUB_MAX);
+    const byOrder = (x, y) => {
+      const lx = isLastRepo(x), ly = isLastRepo(y);
+      if (lx !== ly) return lx ? 1 : -1;
+      return new Date(y.pushed_at) - new Date(x.pushed_at);
+    };
+    let list = own.filter(r => !skip.includes(norm(r.name))).sort(byOrder);
+    if (!list.length) list = own.sort(byOrder);
+    if (list.length > GITHUB_MAX) {
+      const lastItem = list.find(isLastRepo);
+      list = lastItem ? list.filter(r => r !== lastItem).slice(0, GITHUB_MAX - 1).concat(lastItem) : list.slice(0, GITHUB_MAX);
+    }
     if (!list.length) { note('Публичных репозиториев пока нет.'); return; }
     list.forEach((r, i) => {
       const o = GITHUB_OVERRIDES[r.name] || {};
