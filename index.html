@@ -550,21 +550,21 @@ html:has(.viewer[open]){overflow:hidden}
         <span class="service__num">01</span>
         <div class="service__main"><h3>Сайты под ключ</h3><p>Дизайн, вёрстка, домен и SSL.</p></div>
         <div class="service__tags"><span>Design</span><span>Code</span><span>Deploy</span></div>
-        <img class="service__thumb" src="sait.png" width="800" height="500" alt="Пример: сайты под ключ" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="sait.png" width="800" height="500" alt="Пример: сайты под ключ" loading="lazy" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
       <a class="service" href="#pricing" data-img="bot.png">
         <span class="service__num">02</span>
         <div class="service__main"><h3>Telegram-боты</h3><p>Заявки, каталоги, рассылки и API.</p></div>
         <div class="service__tags"><span>Python</span><span>API</span><span>Automation</span></div>
-        <img class="service__thumb" src="bot.png" width="800" height="500" alt="Пример: Telegram-боты" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="bot.png" width="800" height="500" alt="Пример: Telegram-боты" loading="lazy" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
       <a class="service" href="#pricing" data-img="platform.png">
         <span class="service__num">03</span>
         <div class="service__main"><h3>Платформы и приложения</h3><p>Аккаунты, роли, PostgreSQL, Flet и React.</p></div>
         <div class="service__tags"><span>Flask</span><span>PostgreSQL</span><span>React</span></div>
-        <img class="service__thumb" src="platform.png" width="800" height="500" alt="Пример: платформы и приложения" decoding="async" onerror="this.style.display='none'">
+        <img class="service__thumb" src="platform.png" width="800" height="500" alt="Пример: платформы и приложения" loading="lazy" decoding="async" onerror="this.style.display='none'">
         <span class="service__arrow" aria-hidden="true">↘</span>
       </a>
     </div>
@@ -1396,25 +1396,21 @@ window.addEventListener('DOMContentLoaded', () => {
     const img = a.querySelector('img'), box = a.querySelector('.project__cover');
     const fallbackSvg = makeCoverSvg(d.title, d.catLabel, colorHexMap[colorName] || '#7d8cff');
     const sources = [...(d.covers || []), fallbackSvg];
-    let imgTimer = 0;
-    const finishImg = () => { clearTimeout(imgTimer); box.classList.add('is-loaded'); };
+    let started = false;
     const nextSrc = () => {
       const s = sources.shift();
-      if (s) {
-        if (s === fallbackSvg) { clearTimeout(imgTimer); img.onerror = null; }
-        img.src = s;
-      }
+      if (!s) return;
+      if (s === fallbackSvg) img.onerror = null;
+      img.src = s;
     };
-    img.onload = finishImg;
-    img.onerror = nextSrc;
-    nextSrc();
-    imgTimer = setTimeout(() => {
-      if (!box.classList.contains('is-loaded')) {
-        img.onerror = null;
-        img.src = fallbackSvg;
-        finishImg();
-      }
-    }, 12000);
+    const startLoad = () => {
+      if (started) return;
+      started = true;
+      img.onload = () => box.classList.add('is-loaded');
+      img.onerror = nextSrc;
+      nextSrc();
+    };
+    a._startCover = startLoad;
     track.appendChild(a);
     return a;
   };
@@ -1491,15 +1487,9 @@ window.addEventListener('DOMContentLoaded', () => {
       const category = categoryFor(r);
       const branch = r.default_branch || 'main';
       const base = 'https://raw.githubusercontent.com/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '/' + encodeURIComponent(branch) + '/';
-      const cdnCover = 'https://cdn.jsdelivr.net/gh/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '@' + encodeURIComponent(branch) + '/cover.png';
-      const covers = [cdnCover, base + 'cover.png'];
-      if (i < 4) {
-        const preload = document.createElement('link');
-        preload.rel = 'preload';
-        preload.as = 'image';
-        preload.href = cdnCover;
-        document.head.appendChild(preload);
-      }
+      const pagesCover = r.has_pages ? 'https://' + user.toLowerCase() + '.github.io/' + encodeURIComponent(r.name) + '/cover.png' : '';
+      const rawCover = base + 'cover.png';
+      const covers = pagesCover ? [pagesCover, rawCover] : [rawCover];
       const el = card(i, {
         title: o.title || title.charAt(0).toUpperCase() + title.slice(1),
         desc: o.desc || r.description || 'Открытый репозиторий на GitHub.',
@@ -1518,6 +1508,20 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
     animateProjects();
+
+    /* Постепенная подгрузка cover.png только для видимых карточек, чтобы не забивать мобильную сеть */
+    if ('IntersectionObserver' in window) {
+      const coverObs = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target._startCover?.();
+          coverObs.unobserve(entry.target);
+        });
+      }, { root: viewport, rootMargin: '320px' });
+      projectCards.forEach((c) => coverObs.observe(c));
+    } else {
+      projectCards.forEach((c) => c._startCover?.());
+    }
   })();
 });
 </script>
