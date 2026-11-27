@@ -781,7 +781,7 @@ html:has(.viewer[open]){overflow:hidden}
 window.addEventListener('DOMContentLoaded', () => {
   const GITHUB_USER = 'WaterLilyBurdock';
   const GITHUB_MAX = 12;
-  const GITHUB_SKIP = ['portfolio', 'NeonVolt_backend'];
+  const GITHUB_SKIP = ['portfolio', 'NeonVolt_backend', 'VELO X7', 'VELO-X7', 'VELO_X7', 'VELOX7'];
   const GITHUB_OVERRIDES = {
     Zerno: {
       title: 'ZERNO — Specialty Coffee',
@@ -1439,11 +1439,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const loader = note('Загружаю проекты…');
     const key = 'gh:' + user;
+    /* Резервный список проектов на случай, если GitHub API не ответит */
     const FALLBACK_REPOS = [
       { name: 'MODUL', description: '6-страничная EdTech-платформа онлайн-школы', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/MODUL', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T18:28:00Z' },
       { name: 'KUBUS', description: 'Многостраничный сайт музея архитектуры в швейцарской сетке', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/KUBUS', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T18:00:00Z' },
       { name: 'SABLE', description: 'Лендинг-визитка ресторана авторской кухни с прелоадером и SplitText', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/SABLE', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T17:08:00Z' },
-      { name: 'Zerno', description: 'Минималистичный лендинг specialty-кофейни на GSAP ScrollTrigger', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/Zerno', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T17:07:00Z' }
+      { name: 'Zerno', description: 'Минималистичный лендинг specialty-кофейни на GSAP ScrollTrigger', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/Zerno', has_pages: true, default_branch: 'main', pushed_at: '2026-11-26T17:07:00Z' },
+      { name: 'Starlink-SVO', description: 'Веб-сайт проекта Starlink SVO', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/Starlink-SVO', has_pages: true, default_branch: 'main', pushed_at: '2026-11-25T12:00:00Z' },
+      { name: 'Sava-Lana', description: 'Веб-сайт проекта Sava Lana', language: 'HTML', html_url: 'https://github.com/WaterLilyBurdock/Sava-Lana', has_pages: true, default_branch: 'main', pushed_at: '2026-11-24T12:00:00Z' },
+      { name: 'Crystal-Combo', description: 'Браузерная игра Crystal Combo', language: 'JavaScript', html_url: 'https://github.com/WaterLilyBurdock/Crystal-Combo', has_pages: true, default_branch: 'main', pushed_at: '2026-11-23T12:00:00Z' },
+      { name: 'NeonVolt', description: 'Интерактивная игра NeonVolt', language: 'JavaScript', html_url: 'https://github.com/WaterLilyBurdock/NeonVolt', has_pages: true, default_branch: 'main', pushed_at: '2026-11-22T12:00:00Z' },
+      { name: 'Flet-Chat', description: 'Чат-платформа на Python и Flet', language: 'Python', html_url: 'https://github.com/WaterLilyBurdock/Flet-Chat', has_pages: false, default_branch: 'main', pushed_at: '2026-11-21T12:00:00Z' },
+      { name: 'Flet-Coffee', description: 'Приложение кофейни на Python и Flet', language: 'Python', html_url: 'https://github.com/WaterLilyBurdock/Flet-Coffee', has_pages: false, default_branch: 'main', pushed_at: '2026-11-20T12:00:00Z' }
     ];
     let repos, cached, err = 0;
     try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 3e5) repos = cached.d; } catch (e) {}
@@ -1457,10 +1464,11 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     loader.remove();
     if (!repos || !repos.length) repos = FALLBACK_REPOS;
-    const skip = GITHUB_SKIP.map(x => x.toLowerCase()).concat([user.toLowerCase() + '.github.io']);
+    const norm = x => String(x).toLowerCase().replace(/[-_\s]+/g, ' ').trim();
+    const skip = GITHUB_SKIP.map(norm).concat([norm(user + '.github.io')]);
     const own = repos.filter(r => !r.fork && !r.archived);
     const byDate = (x, y) => new Date(y.pushed_at) - new Date(x.pushed_at);
-    let list = own.filter(r => !skip.includes(r.name.toLowerCase())).sort(byDate);
+    let list = own.filter(r => !skip.includes(norm(r.name))).sort(byDate);
     if (!list.length) list = own.sort(byDate);
     list = list.slice(0, GITHUB_MAX);
     if (!list.length) { note('Публичных репозиториев пока нет.'); return; }
