@@ -19,9 +19,10 @@
 <link rel="preload" as="image" href="me.png" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+<link rel="preconnect" href="https://opengraph.githubassets.com" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://api.github.com">
-<link rel="dns-prefetch" href="https://raw.githubusercontent.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;900&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
 :root{
@@ -485,7 +486,7 @@ html:has(.viewer[open]){overflow:hidden}
               <span class="portrait__qr-badge">VLADISLAV · QR</span>
               <div class="portrait__qr-frame">
                 <div class="portrait__qr-box">
-                  <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" decoding="async">
+                  <img src="qr.png" width="512" height="512" alt="QR-код для быстрой связи" loading="lazy" decoding="async">
                 </div>
               </div>
               <span class="portrait__qr-title">Быстрая связь</span>
@@ -1387,19 +1388,29 @@ window.addEventListener('DOMContentLoaded', () => {
     a.className = 'project';
     a.dataset.category = d.category;
     a.style.setProperty('--c', 'var(--' + colorName + ')');
-    a.innerHTML = '<div class="project__cover project__cover--img"><span>' + esc(d.catLabel) + ' · ' + num + '</span><img width="800" height="500" alt="Обложка проекта ' + esc(d.title) + '" decoding="async" draggable="false"></div>'
+    a.innerHTML = '<div class="project__cover project__cover--img"><span>' + esc(d.catLabel) + ' · ' + num + '</span><img width="800" height="500" alt="Обложка проекта ' + esc(d.title) + '" loading="' + (i < 3 ? 'eager' : 'lazy') + '" decoding="async" draggable="false"></div>'
       + '<div class="project__body"><div class="project__meta"><span>' + num + ' / 2026</span><span>' + esc(d.lang) + '</span></div>'
       + '<h3>' + esc(d.title) + '</h3><p>' + esc(d.desc) + '</p>'
       + '<div class="project__links"><button type="button" class="project__open" hidden>Посмотреть ↗</button><a href="' + esc(d.url) + '" target="_blank" rel="noopener noreferrer" draggable="false">GitHub ↗</a>'
       + (d.site ? '<a href="' + esc(d.site) + '" target="_blank" rel="noopener noreferrer" draggable="false">Сайт ↗</a>' : '') + '</div></div>';
     const img = a.querySelector('img'), box = a.querySelector('.project__cover'), q = d.imgs.slice();
     const fallbackSvg = makeCoverSvg(d.title, d.catLabel, colorHexMap[colorName] || '#7d8cff');
+    let imgTimer = 0;
+    const finishImg = () => { clearTimeout(imgTimer); box.classList.add('is-loaded'); };
     const nextImg = () => {
+      clearTimeout(imgTimer);
       const s = q.shift();
-      if (s) img.src = s;
-      else { img.onerror = null; img.src = fallbackSvg; box.classList.add('is-loaded'); }
+      if (s) {
+        img.src = s;
+        // Если обложка с GitHub грузится дольше 3.5 сек — переключаемся на следующий вариант
+        imgTimer = setTimeout(() => { if (!box.classList.contains('is-loaded')) nextImg(); }, 3500);
+      } else {
+        img.onerror = null;
+        img.src = fallbackSvg;
+        finishImg();
+      }
     };
-    img.onload = () => box.classList.add('is-loaded');
+    img.onload = finishImg;
     img.onerror = nextImg;
     nextImg();
     track.appendChild(a);
@@ -1456,7 +1467,7 @@ window.addEventListener('DOMContentLoaded', () => {
     try { cached = JSON.parse(localStorage.getItem(key) || 'null'); if (cached && Date.now() - cached.t < 3e5) repos = cached.d; } catch (e) {}
     if (!repos) {
       try {
-        const r = await fetchWithTimeout('https://api.github.com/users/' + encodeURIComponent(user) + '/repos?per_page=100&sort=pushed', { headers: { Accept: 'application/vnd.github+json' } }, 7000);
+        const r = await fetchWithTimeout('https://api.github.com/users/' + encodeURIComponent(user) + '/repos?per_page=100&sort=pushed', { headers: { Accept: 'application/vnd.github+json' } }, 4500);
         if (!r.ok) { err = r.status; throw 0; }
         repos = await r.json();
         try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d: repos })); } catch (e) {}
@@ -1477,6 +1488,10 @@ window.addEventListener('DOMContentLoaded', () => {
       const title = r.name.replace(/[-_]+/g, ' ');
       const category = categoryFor(r);
       const base = 'https://raw.githubusercontent.com/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name) + '/' + encodeURIComponent(r.default_branch || 'HEAD') + '/';
+      /* Приоритет: точная обложка из GITHUB_OVERRIDES -> cover.png -> автоматическая обложка GitHub (без 4 лишних 404-запросов) */
+      const imgs = o.cover
+        ? [base + o.cover, 'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)]
+        : [base + 'cover.png', 'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)];
       const el = card(i, {
         title: o.title || title.charAt(0).toUpperCase() + title.slice(1),
         desc: o.desc || r.description || 'Открытый репозиторий на GitHub.',
@@ -1485,14 +1500,7 @@ window.addEventListener('DOMContentLoaded', () => {
         catLabel: CARD_CATEGORY_LABELS[category] || 'Проект',
         url: r.html_url,
         site: /^https?:\/\//.test(r.homepage || '') ? r.homepage : '',
-        imgs: [
-          base + 'cover.png',
-          base + 'cover.jpg',
-          base + 'preview.png',
-          base + 'preview.jpg',
-          ...(o.cover ? [base + o.cover] : []),
-          'https://opengraph.githubassets.com/1/' + encodeURIComponent(user) + '/' + encodeURIComponent(r.name)
-        ]
+        imgs
       });
       resolveDemo(r, base, user).then(demo => {
         if (!demo) return;
